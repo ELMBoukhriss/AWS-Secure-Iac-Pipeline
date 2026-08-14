@@ -31,7 +31,103 @@ To structure the security design, I used the STRIDE framework a simple but power
 
 ## Technical Steps
 
+
 ### 1. Infrastructure Setup
+The first step is to make sure that the following tools are installed.
 
+```
+terraform --version
+git --version
+checkov --version
+```
+<p></p>
+<img width="742" height="114" alt="1" src="/assets/1.png" />
+<p></p>
 
+**Create the Github Repo**
+```
+# Create local project
+mkdir aws-icorp-iac-pipeline
+cd aws-icorp-iac-pipeline
+git init
+git branch -M main
 
+# Create folder structure
+mkdir -p terraform .github/workflows
+
+# Create .gitignore
+cat > .gitignore << 'EOF'
+# Terraform — never commit these
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+terraform.tfvars
+*.auto.tfvars
+
+# Checkov output
+results.sarif
+
+# OS
+.DS_Store
+EOF
+```
+The next step is to create the github repo.
+```
+git remote add origin https://github.com/ELMBoukhriss/aws-icorp-iac-pipeline.git
+```
+
+**Misconfigured Terraform files**
+
+**Local Checkov test**
+
+Before wiring GitHub Actions, i will validate the i can see the findings locally using checkov:
+
+```
+checkov -d terraform/ \
+  --framework terraform \
+  --output cli
+
+# Count findings by severity
+checkov -d terraform/ \
+  --framework terraform \
+  --output json \
+  | python3 -c "
+import json, sys
+data = json.load(sys.stdin)
+results = data['results']['failed_checks']
+from collections import Counter
+sevs = Counter(r['check_result'].get('result', 'FAILED') for r in results)
+print(f'Total failed checks: {len(results)}')
+for r in results:
+    print(f\"  {r['check_id']} | {r['check_result']['result']} | {r['resource']}\")
+"
+```
+<p></p>
+<img width="742" height="114" alt="1" src="/assets/2.png" />
+<p></p>
+
+**Commit the Misconfigured State**
+```
+cd aws-icorp-iac-pipeline
+
+git add .
+git commit -m "initial icorp infrastructure (misconfigured baseline)
+
+Intentionally misconfigured 3-tier infrastructure for iCorp.
+This commit represents the pre-pipeline state — no security 
+gates in place. Findings will be caught and remediated in
+subsequent commits via the Checkov IaC security pipeline.
+
+Misconfigurations present:
+- S3: public access enabled, no encryption, no versioning
+- RDS: storage unencrypted, publicly accessible, no backups
+- EC2: IMDSv1 enabled, EBS unencrypted
+- SG: SSH open to 0.0.0.0/0
+- IAM: wildcard Action on EC2 role"
+```
+<p></p>
+<img width="742" height="114" alt="1" src="/assets/3.png" />
+<p></p>
+
+### 2. GitHub Actions Pipeline
