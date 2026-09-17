@@ -1,0 +1,207 @@
+name: IaC Security Pipeline
+
+# ── Triggers ──────────────────────────────────────────────────────────────────
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+# ── Permissions ───────────────────────────────────────────────────────────────
+permissions:
+  contents: read
+  pull-requests: write
+
+# ── Jobs ──────────────────────────────────────────────────────────────────────
+jobs:
+
+  # ── Job 1: Terraform Format ─────────────────────────────────────────────────
+  fmt:
+    name: Terraform Format
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.6.2"
+
+      - name: Check formatting
+        run: terraform fmt -check -recursive terraform/
+
+
+  # ── Job 2: Terraform Validate ───────────────────────────────────────────────
+  validate:
+    name: Terraform Validate
+    runs-on: ubuntu-latest
+    needs: fmt
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.6.2"
+
+      - name: Init
+        run: terraform -chdir=terraform init -backend=false
+
+      - name: Validate
+        run: terraform -chdir=terraform validate
+
+
+  # ── Job 3: Checkov Security Scan ────────────────────────────────────────────
+  checkov:
+    name: Checkov Security Scan
+    runs-on: ubuntu-latest
+    needs: validate
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Checkov
+        id: checkov
+        uses: bridgecrewio/checkov-action@v12
+        with:
+          directory: terraform/
+          framework: terraform
+          output_format: cli,sarif
+          output_file_path: console,results.sarif
+
+      # Post the Checkov results to the PR.
+      # Runs even when Checkov finds violations.
+      - name: Post PR comment
+        uses: actions/github-script@v7
+        if: always() && github.event_name == 'pull_request'
+        with:
+          script: |
+            const fs = require('fs');
+            let body = '';
+
+            try {
+              const sarif = JSON.parse(
+                fs.readFileSync('results.sarif', 'utf8')
+              );
+
+              const results =
+                sarif.runs?.flatMap(r => r.results || []) || [];
+
+              const passed =
+                '${{ steps.checkov.outcome }}' === 'success';
+
+              const rows = results.map(r => {
+                const rule = r.ruleId || 'N/A';
+                const resource =
+                  r.message?.text?.split('\n')[0] || 'N/A';
+
+                const location =
+                  r.locations?.[0]?.physicalLocation;
+
+                const file =
+                  location?.artifactLocation?.uri || 'N/A';
+
+                const line =
+                  location?.region?.startLine || '';
+
+                return `| \`${rule}\` | ${resource} | ${file}:${line} |`;
+              }).join('\n');
+
+              const table = results.length
+                ? `
+
+            ### Findings
+
+            | Rule | Resource | File |
+            |---|---|---|
+            ${rows}`
+                : '';
+
+              body = `## ${passed ? '✅' : '🚨'} IaC Security Scan — ${passed ? 'PASSED' : 'FAILED'}
+
+            | Metric | Value |
+            |---|---|
+            | Total findings | **${results.length}** |
+            | Status | ${passed ? '🟢 No issues found' : '🔴 Issues detected'} |
+
+            ${
+              passed
+                ? '> No Checkov findings detected. This PR may be merged.'
+                : '> Checkov found security violations. Fix all findings before merging.'
+            }
+            ${table}
+
+            ---
+            <sub>Checkov · iCorp IaC Security Pipeline · commit \`${context.sha.slice(0, 7)}\`</sub>`;
+
+            } catch (error) {
+              body = `## ⚠️ IaC Security Scan — ERROR
+
+            Unable to read Checkov results.
+
+            Check the GitHub Actions log for details.`;
+            }
+
+            // Remove previous Checkov comments
+            const comments = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number
+            });
+
+            for (const comment of comments.data) {
+              if (
+                comment.user.type === 'Bot' &&
+                comment.body.includes('IaC Security Scan')
+              ) {
+                await github.rest.issues.deleteComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  comment_id: comment.id
+                });
+              }
+            }
+
+            // Post the new comment
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body
+            });
+
+
+  # ── Job 4: Security Gate ────────────────────────────────────────────────────
+  security-gate:
+    name: Security Gate
+    runs-on: ubuntu-latest
+    needs: checkov
+    if: always()
+
+    steps:
+      - name: Evaluate gate
+        run: |
+          if [ "${{ needs.checkov.result }}" = "failure" ]; then
+            echo "════════════════════════════════════════"
+            echo "  SECURITY GATE: FAILED"
+            echo "  Checkov found misconfigurations."
+            echo "  Resolve all findings and push again."
+            echo "════════════════════════════════════════"
+            exit 1
+          fi
+
+          if [ "${{ needs.checkov.result }}" != "success" ]; then
+            echo "════════════════════════════════════════"
+            echo "  SECURITY GATE: FAILED"
+            echo "  Checkov did not complete successfully."
+            echo "  Status: ${{ needs.checkov.result }}"
+            echo "  Fix the pipeline before merging."
+            echo "════════════════════════════════════════"
+            exit 1
+          fi
+
+          echo "════════════════════════════════════════"
+          echo "  SECURITY GATE: PASSED"
+          echo "  No Checkov findings detected."
+          echo "  PR is clear to merge."
+          echo "════════════════════════════════════════"
