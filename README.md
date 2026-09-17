@@ -79,6 +79,20 @@ git remote add origin https://github.com/ELMBoukhriss/aws-icorp-iac-pipeline.git
 
 **Misconfigured Terraform files**
 
+| Terraform file | Description |
+|---|---|
+| **[main.tf](terraform/main.tf)**| Provider config, Terraform version, shared data sources (AMI, account ID) |
+| **[variables.tf](terraform/variables.tf)**| Input variables : region, project name, DB credentials | 
+| **[outputs.tf](terraform/outputs.tf)** | Exposes VPC ID and S3 bucket name after apply |
+| **[vpc.tfvars](terraform/vpc.tf)**  | VPC, internet gateway, public subnet, route table | 
+| **[sg.tf](terraform/sg.tf)**  | 	Security groups for EC2 and RDS, intentionally misconfigured with open ingress rules | 
+| **[iam.tf](terraform/iam.tf)**  | EC2 instance role, intentionally misconfigured with wildcard Action: "*" |
+| **[ec2.tf](terraform/ec2.tf)** | App server: intentionally misconfigured with IMDSv1 and unencrypted EBS|
+| **[s3.tf](terraform/s3.tf)**  | Application data bucket: intentionally misconfigured with public access enabled | 
+| **[rds.tf](terraform/rds.tf)**  | PostgreSQL database: intentionally misconfigured, unencrypted and publicly accessible |
+
+<p></p>
+
 **Local Checkov test**
 
 Before wiring GitHub Actions, i will validate the i can see the findings locally using checkov:
