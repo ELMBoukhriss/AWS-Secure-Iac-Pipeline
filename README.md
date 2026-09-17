@@ -65,11 +65,6 @@ cat > .gitignore << 'EOF'
 terraform.tfvars
 *.auto.tfvars
 
-# Checkov output
-results.sarif
-
-# OS
-.DS_Store
 EOF
 ```
 The next step is to create the github repo.
