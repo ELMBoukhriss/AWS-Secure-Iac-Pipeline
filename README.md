@@ -93,7 +93,7 @@ This terraform infrastructure files contain several misconfigurations that will 
 
 **Github Actions Pipeline**
 
-we need to create ".github/workflows/security-pipeline.yml" file wich will be the blueprint for our pipeline.
+we need to create ".github/workflows/security-pipeline.yml" [Security-pipeline.yml](security-pipeline.yml) file wich will be the blueprint for our pipeline.
 
 *Triggers*
 
@@ -132,24 +132,14 @@ If it fails, the PR is blocked and cannot be merged
 Before wiring GitHub Actions, i will validate the i can see the findings locally using checkov:
 
 ```
-checkov -d terraform/ \
-  --framework terraform \
-  --output cli
+# confirm terraform files are valid
+cd terraform
+terraform init -backend=false
+terraform validate
+cd ..
 
-# Count findings by severity
-checkov -d terraform/ \
-  --framework terraform \
-  --output json \
-  | python3 -c "
-import json, sys
-data = json.load(sys.stdin)
-results = data['results']['failed_checks']
-from collections import Counter
-sevs = Counter(r['check_result'].get('result', 'FAILED') for r in results)
-print(f'Total failed checks: {len(results)}')
-for r in results:
-    print(f\"  {r['check_id']} | {r['check_result']['result']} | {r['resource']}\")
-"
+# confirm checkov finds issues
+checkov -d terraform/ --framework terraform --quiet
 ```
 <p></p>
 <img width="742" height="114" alt="1" src="/assets/2.png" />
