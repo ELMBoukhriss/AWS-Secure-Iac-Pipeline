@@ -41,7 +41,7 @@ git --version
 checkov --version
 ```
 <p></p>
-<img width="742" height="114" alt="1" src="/assets/1.png" />
+<img width="400" height="200" alt="1" src="/assets/1.png" />
 <p></p>
 
 **Create the Github Repo**
@@ -74,6 +74,9 @@ git remote add origin https://github.com/ELMBoukhriss/aws-icorp-iac-pipeline.git
 
 **Misconfigured Terraform files**
 
+This terraform infrastructure files contain several misconfigurations that will be detected by checkov scan.
+<p></p>
+
 | Terraform file | Description |
 |---|---|
 | **[main.tf](terraform/main.tf)**| Provider config, Terraform version, shared data sources (AMI, account ID) |
@@ -85,6 +88,42 @@ git remote add origin https://github.com/ELMBoukhriss/aws-icorp-iac-pipeline.git
 | **[ec2.tf](terraform/ec2.tf)** | App server: intentionally misconfigured with IMDSv1 and unencrypted EBS|
 | **[s3.tf](terraform/s3.tf)**  | Application data bucket: intentionally misconfigured with public access enabled | 
 | **[rds.tf](terraform/rds.tf)**  | PostgreSQL database: intentionally misconfigured, unencrypted and publicly accessible |
+
+<p></p>
+
+**Github Actions Pipeline**
+
+we need to create ".github/workflows/security-pipeline.yml" file wich will be the blueprint for our pipeline.
+
+*Triggers*
+
+Runs automatically on every pull request and push targeting main
+
+*Permissions*
+
+Requests only 3 permissions — read code, write PR comments, write to Security tab
+
+*Job 1: Terraform Format*
+
+Checks all .tf files are correctly formatted
+Fails if any file needs formatting, enforces consistent code style
+
+*Job 2: Terraform Validate*
+
+Checks Terraform syntax and resource schema are valid
+Runs without AWS credentials, purely static analysis
+
+*Job 3: Checkov Security Scan*
+
+Scans all Terraform files using checkov
+Outputs results to the Actions log and uploads a SARIF file to the GitHub Security tab
+Posts a findings summary table as a comment directly on the PR
+
+*Job 4: Security Gate*
+
+The only job added to branch protection as a required status check
+Fails if Checkov failed, errored, or was skipped, closes the bypass gap
+If it fails, the PR is blocked and cannot be merged
 
 <p></p>
 
