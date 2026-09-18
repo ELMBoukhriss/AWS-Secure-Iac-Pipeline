@@ -142,30 +142,31 @@ cd ..
 checkov -d terraform/ --framework terraform --quiet
 ```
 <p></p>
-<img width="742" height="114" alt="1" src="/assets/2.png" />
+<img width="900" height="800" alt="1" src="/assets/2.png" />
 <p></p>
 
 **Commit the Misconfigured State**
+
+I will push the misconfigured infrastructure to the main branch of the repo aws-icorp-iac-pipeline.
+
 ```
-cd aws-icorp-iac-pipeline
+git remote add origin https://github.com/ELMBoukhriss/aws-icorp-iac-pipeline.git
 
 git add .
-git commit -m "initial icorp infrastructure (misconfigured baseline)
+git commit -m "ci: add pipeline and misconfigured infrastructure"
+git push -u origin main
 
-Intentionally misconfigured 3-tier infrastructure for iCorp.
-This commit represents the pre-pipeline state — no security 
-gates in place. Findings will be caught and remediated in
-subsequent commits via the Checkov IaC security pipeline.
-
-Misconfigurations present:
-- S3: public access enabled, no encryption, no versioning
-- RDS: storage unencrypted, publicly accessible, no backups
-- EC2: IMDSv1 enabled, EBS unencrypted
-- SG: SSH open to 0.0.0.0/0
-- IAM: wildcard Action on EC2 role"
+```
+After that i will create a feature branch named "misconfigured-infra" and add a comment "# trigger" to the main.tf file, this way we will simulate the push of a new version of the iac code to the main branch from the misconfigured-infra branch.
+```
+git checkout -b feat/misconfigured-infra
+echo "# trigger" >> terraform/main.tf
+git add .
+git commit -m "feat: misconfigured infrastructure baseline"
+git push -u origin feat/misconfigured-infra
 ```
 <p></p>
-<img width="742" height="114" alt="1" src="/assets/3.png" />
+<img width="900" height="800" alt="1" src="/assets/3.png" />
 <p></p>
 
 ### 2. GitHub Actions Pipeline
