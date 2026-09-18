@@ -31,8 +31,6 @@ To structure the security design, I used the STRIDE framework a simple but power
 
 ## Technical Steps
 
-
-### 1. Infrastructure Setup
 The first step is to make sure that the following tools are installed.
 
 ```
@@ -44,7 +42,7 @@ checkov --version
 <img width="400" height="200" alt="1" src="/assets/1.png" />
 <p></p>
 
-**Create the Github Repo**
+### 1. Create the Github Repo
 ```
 # Create local project
 mkdir aws-icorp-iac-pipeline
@@ -72,7 +70,7 @@ The next step is to create the github repo.
 git remote add origin https://github.com/ELMBoukhriss/aws-icorp-iac-pipeline.git
 ```
 
-**Misconfigured Terraform files**
+### 2. Misconfigured Terraform files
 
 This terraform infrastructure files contain several misconfigurations that will be detected by checkov scan.
 <p></p>
@@ -91,7 +89,7 @@ This terraform infrastructure files contain several misconfigurations that will 
 
 <p></p>
 
-**Github Actions Pipeline**
+### 3. Github Actions Pipeline
 
 we need to create ".github/workflows/security-pipeline.yml" [Security-pipeline.yml](security-pipeline.yml) file wich will be the blueprint for our pipeline.
 
@@ -127,7 +125,7 @@ If it fails, the PR is blocked and cannot be merged
 
 <p></p>
 
-**Local Checkov test**
+### 4. Local Checkov test
 
 Before wiring GitHub Actions, i will validate the i can see the findings locally using checkov:
 
@@ -145,7 +143,7 @@ checkov -d terraform/ --framework terraform --quiet
 <img width="900" height="800" alt="1" src="/assets/2.png" />
 <p></p>
 
-**Commit the Misconfigured State**
+### 5. Commit the Misconfigured State
 
 I will push the misconfigured infrastructure to the main branch of the repo aws-icorp-iac-pipeline.
 
@@ -160,7 +158,7 @@ git push -u origin main
 After that i will create a feature branch named "misconfigured-infra" and add a comment "# trigger" to the main.tf file, this way we will simulate the push of a new version of the iac code to the main branch from the misconfigured-infra branch.
 ```
 git checkout -b feat/misconfigured-infra
-echo "# trigger" >> terraform/main.tf
+echo " # trigger" >> terraform/main.tf
 git add .
 git commit -m "feat: misconfigured infrastructure baseline"
 git push -u origin feat/misconfigured-infra
@@ -169,4 +167,24 @@ git push -u origin feat/misconfigured-infra
 <img width="900" height="800" alt="1" src="/assets/3.png" />
 <p></p>
 
-### 2. GitHub Actions Pipeline
+Now i will go to github and create a pull request from "misconfigured-infra" branch to "main" branch.
+
+<p></p>
+<img width="900" height="800" alt="1" src="/assets/4.png" />
+<p></p>
+
+<p></p>
+<img width="900" height="800" alt="1" src="/assets/5.png" />
+<p></p>
+
+<p></p>
+<img width="900" height="800" alt="1" src="/assets/6.png" />
+<p></p>
+
+<p></p>
+<img width="900" height="800" alt="1" src="/assets/7.png" />
+<p></p>
+
+
+
+### 6. 
