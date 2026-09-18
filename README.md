@@ -177,14 +177,43 @@ Now i will go to github and create a pull request from "misconfigured-infra" bra
 <img width="900" height="800" alt="1" src="/assets/5.png" />
 <p></p>
 
+After creating the pull request, we can notice in the image below, that the Terraform Validate and Format jobs were successful, but the Checkov Scan and Security gate weren't. Which means that checkov has detected some misconfigurations in our IaC code.
+
 <p></p>
 <img width="900" height="800" alt="1" src="/assets/6.png" />
 <p></p>
+
+As we can see in the github actions section, The IaC has 42 security findings that we need to resolve before merging.
+<p></p>
+The table shows the Rule code for example `CKV_AWS_126`, in the newt column we find a short remediation recommendation, then the file column shows the filename and code line number.
 
 <p></p>
 <img width="900" height="800" alt="1" src="/assets/7.png" />
 <p></p>
 
 
+### 6. Enabling Branch Protection
 
-### 6. 
+I will enable the `main` branch protection rule, so that no code can be merged without validating our security checks.
+
+<p></p>
+<img width="900" height="800" alt="1" src="/assets/8.png" />
+<p></p>
+
+<p></p>
+<img width="900" height="800" alt="1" src="/assets/9.png" />
+<p></p>
+
+
+### 7. Fixing the Terraform and merging the code
+
+The files that needs to be fixed are `sg.tf`, `iam.tf`, `ec2.tf`, `s3`, `rds.tf`. The others have no checkov findings.
+
+**Fixed Files**
+[sg.tf](/terraform-fixed/sg.tf)
+[iam.tf](/terraform-fixed/iam.tf)
+[ec2.tf](/terraform-fixed/ec2.tf)
+[s3.tf](/terraform-fixed/s3.tf)
+[rds.tf](/terraform-fixed/rds.tf)
+
+### 7. Enabling Branch Protection
