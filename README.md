@@ -229,25 +229,6 @@ After fixing the misconfigurations i will retest with checkov locally
 
 We can notice that 13 findings remain unresolved. For this lab scenario i will explicitly skip them in our security pipeline file.
 
-```
-Add this code to the security-pipeline.yml file
-
-          skip_check: >-
-            CKV_AWS_288,
-            CKV_AWS_355,
-            CKV_AWS_290,
-            CKV_AWS_353,
-            CKV_AWS_157,
-            CKV_AWS_118,
-            CKV2_AWS_11,
-            CKV2_AWS_12,
-            CKV2_AWS_62,
-            CKV_AWS_144,
-            CKV2_AWS_61,
-            CKV_AWS_145,
-            CKV2_AWS_30
-```
-
 <p></p>
 <img width="900" height="800" alt="1" src="/assets/11.png" />
 <p></p>
