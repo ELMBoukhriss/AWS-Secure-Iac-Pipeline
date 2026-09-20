@@ -200,14 +200,16 @@ I will enable the `main` branch protection rule, so that no code can be merged w
 <img width="900" height="800" alt="1" src="/assets/8.png" />
 <p></p>
 
+The needed configurations are numbered in the screenshot below.
+
 <p></p>
-<img width="900" height="800" alt="1" src="/assets/9.png" />
+<img width="900" height="1000" alt="1" src="/assets/9.png" />
 <p></p>
 
 
 ### 7. Fixing the Terraform and merging the code
 
-The files that needs to be fixed are `sg.tf`, `iam.tf`, `ec2.tf`, `s3`, `rds.tf`. The others have no checkov findings.
+The files that needs to be fixed are `sg.tf`, `iam.tf`, `ec2.tf`, `s3`, `rds.tf`, `vpc.tf`. The others have no checkov findings.
 
 **Fixed Files**
 [sg.tf](/terraform-fixed/sg.tf)
@@ -215,5 +217,39 @@ The files that needs to be fixed are `sg.tf`, `iam.tf`, `ec2.tf`, `s3`, `rds.tf`
 [ec2.tf](/terraform-fixed/ec2.tf)
 [s3.tf](/terraform-fixed/s3.tf)
 [rds.tf](/terraform-fixed/rds.tf)
+[vpc.tf](/terraform-fixed/vpc.tf)
 
 ### 7. Enabling Branch Protection
+
+After fixing the misconfigurations i will retest with checkov locally
+
+<p></p>
+<img width="900" height="800" alt="1" src="/assets/10.png" />
+<p></p>
+
+We can notice that 13 findings remain unresolved. For this lab scenario i will explicitly skip them in our security pipeline file.
+
+```
+Add this code to the security-pipeline.yml file
+
+          skip_check: >-
+            CKV_AWS_288,
+            CKV_AWS_355,
+            CKV_AWS_290,
+            CKV_AWS_353,
+            CKV_AWS_157,
+            CKV_AWS_118,
+            CKV2_AWS_11,
+            CKV2_AWS_12,
+            CKV2_AWS_62,
+            CKV_AWS_144,
+            CKV2_AWS_61,
+            CKV_AWS_145,
+            CKV2_AWS_30
+```
+
+<p></p>
+<img width="900" height="800" alt="1" src="/assets/11.png" />
+<p></p>
+
+
