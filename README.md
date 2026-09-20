@@ -233,4 +233,4 @@ We can notice that 13 findings remain unresolved. For this lab scenario i will e
 <img width="900" height="800" alt="1" src="/assets/11.png" />
 <p></p>
 
-
+Now i will retest the pipeline in github
