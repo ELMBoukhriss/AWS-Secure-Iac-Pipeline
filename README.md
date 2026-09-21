@@ -241,7 +241,7 @@ Now i will retest the pipeline in github.
 <img width="900" height="800" alt="1" src="/assets/12.png" />
 <p></p>
 
-All the 4 jobs are successful.
+All the 4 jobs were successful.
 <p></p>
 <img width="900" height="800" alt="1" src="/assets/13.png" />
 <p></p>
