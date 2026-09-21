@@ -233,4 +233,25 @@ We can notice that 13 findings remain unresolved. For this lab scenario i will e
 <img width="900" height="800" alt="1" src="/assets/11.png" />
 <p></p>
 
-Now i will retest the pipeline in github
+### 8. Security Pipeline retest
+
+Now i will retest the pipeline in github.
+
+<p></p>
+<img width="900" height="800" alt="1" src="/assets/12.png" />
+<p></p>
+
+All the 4 jobs are successful.
+<p></p>
+<img width="900" height="800" alt="1" src="/assets/13.png" />
+<p></p>
+
+<p></p>
+<img width="900" height="800" alt="1" src="/assets/14.png" />
+<p></p>
+
+As we can see in the screenshot above the code was merged successfuly with 0 security finding.
+
+### 8.Future Perspective
+Now we have a working Iac security pipeline that scans the AWS terraform code before merging to main branch. this was we have applied the shift left principle that moves security early in the development lifecycle. but this is just one layer in the future i will add more security measures to protect the pipeline especially the security-pipeline.yml file from alternation by other devs or a malicious actor. 
+
