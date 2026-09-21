@@ -13,6 +13,9 @@ iCorp needs an automated security pipeline that validates Terraform code before 
 
 ## Architecture
 
+<p></p>
+<img width="800" height="900" alt="1" src="/assets/IacArchitecture.png" />
+<p></p>
 
 ## Threat model (STRIDE)
 To structure the security design, I used the STRIDE framework a simple but powerful way to think about threats in cloud environments.
