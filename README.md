@@ -1,4 +1,4 @@
-# AWS-Secure-Iac-Pipeline-DRAFT
+# AWS Secure Iac Pipeline
 
 ## Context and Business Impact
 
